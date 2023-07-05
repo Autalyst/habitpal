@@ -18,7 +18,6 @@ export class AuthController {
         @Body() authRequestDto: AuthRequestDto,
         @Res({ passthrough: true}) response: Response,
     ): Promise<AuthResultDto> {
-        console.log("AUTH CONTROLLER");
         const authInfo = await this.authService.authorize(authRequestDto);
 
         const refreshToken = await this.authService.createRefreshToken(authInfo);

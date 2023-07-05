@@ -1,139 +1,137 @@
-// import { Injectable, NotFoundException } from "@nestjs/common";
-// import { Contest, ContestRuleType, ContestantStatus, Prisma, User } from "@prisma/client";
-// import { AuthService } from "src/auth/auth.service";
-// import { PrismaService } from "src/prisma/prisma.service";
-// import { ContestCreateDto } from "./dto/contest.create.dto";
+import { Injectable } from "@nestjs/common";
+import { Contest, User } from "@prisma/client";
+import { PrismaService } from "src/prisma/prisma.service";
+import { ContestCreateDto } from "./dto/contest-create.dto";
+import { CurrentAuthService } from "src/auth/current-auth.service";
 
-// @Injectable()
-// export class ContestService {
-//     constructor(
-//         private authService: AuthService,
-//         private prisma: PrismaService
-//     ) {}
+@Injectable()
+export class ContestService {
+    constructor(
+        private currentAuthService: CurrentAuthService,
+        private prisma: PrismaService
+    ) {}
 
-//     public async createContest(
-//         contestCreateDto: ContestCreateDto
-//     ): Promise<Contest> {
-//         const currentUser: User = await this.authService.currentUser();
-//         const c = contestCreateDto;
+    public async createContest(
+        contestCreateDto: ContestCreateDto
+    ): Promise<Contest> {
+        const currentUser: User = this.currentAuthService.currentUser();
+        const c = contestCreateDto;
 
-//         // todo: use generated type?
+        const contest = await this.prisma.contest.create({
+            data: {
+                title: c.title,
+                description: c.description,
+                startTime: c.startTime,
+                endTime: c.endTime,
+                userId: currentUser.id,
+ 
+                contestRules: {
+                    create: c.contestRules.map( rule => { 
+                        return { 
+                            ruleType: rule.ruleType 
+                        }
+                    })
+                }
+            }
+        });
 
-//         const contest = await this.prisma.contest.create({
-//             data: {
-//                 title: c.title,
-//                 description: c.description,
-//                 startTime: c.startTime,
-//                 endTime: c.endTime,
-//                 userId: currentUser.id,
+        return contest;
+    }
 
-//                 contestRules: {
-//                     create: c.contestRules.map( rule => { 
-//                         return { 
-//                             ruleType: rule. ruleType 
-//                         }
-//                     })
-//                 }
-//             }
-//         });
+    // public async findContest(contestId: number): Promise<Contest> {
+    //     const currentUser: User = await this.authService.currentUser();
+    //     const contest = await this.prisma.contest.findFirst({
+    //         where: {
+    //             AND: [
+    //                 {
+    //                     id: contestId,
+    //                 },
+    //                 this.contestVisibleConditions(currentUser.id)
+    //             ]
+    //         }
+    //     });
 
-//         return contest;
-//     }
+    //     if (contest == null) {
+    //         throw new NotFoundException("Contest not found for given id. The contest doesn't exist or you don't have access to see it.");
+    //     }
 
-//     public async findContest(contestId: number): Promise<Contest> {
-//         const currentUser: User = await this.authService.currentUser();
-//         const contest = await this.prisma.contest.findFirst({
-//             where: {
-//                 AND: [
-//                     {
-//                         id: contestId,
-//                     },
-//                     this.contestVisibleConditions(currentUser.id)
-//                 ]
-//             }
-//         });
+    //     return contest as Contest;
+    // }
 
-//         if (contest == null) {
-//             throw new NotFoundException("Contest not found for given id. The contest doesn't exist or you don't have access to see it.");
-//         }
+    // public async findAllContests(): Promise<Contest[]> {
+    //     const currentUser: User = await this.authService.currentUser();
+    //     const contests = await this.prisma.contest.findMany({
+    //         where: this.contestVisibleConditions(currentUser.id)
+    //     });
 
-//         return contest as Contest;
-//     }
+    //     return contests as Contest[];
+    // }
 
-//     public async findAllContests(): Promise<Contest[]> {
-//         const currentUser: User = await this.authService.currentUser();
-//         const contests = await this.prisma.contest.findMany({
-//             where: this.contestVisibleConditions(currentUser.id)
-//         });
+    // private contestVisibleConditions(currentUserId: bigint) {
+    //     return {
+    //         OR: [
+    //             this.conditionUserInContest(currentUserId),
+    //             this.conditionUserIsOwner(currentUserId),
+    //             this.conditionFriendOfOwner(currentUserId),
+    //             this.conditionFiendOfFriend(currentUserId),
+    //         ]
+    //     }
+    // }
 
-//         return contests as Contest[];
-//     }
+    // private conditionUserInContest(currentUserId: bigint) {
+    //     return {
+    //         contestants: {
+    //             some: {
+    //                 status: {
+    //                     notIn: [ ContestantStatus.LEFT, ContestantStatus.REMOVED ]
+    //                 },
+    //                 user: {
+    //                     id: currentUserId,
+    //                 }
+    //             }
+    //         }
+    //     };
+    // }
 
-//     private contestVisibleConditions(currentUserId: bigint) {
-//         return {
-//             OR: [
-//                 this.conditionUserInContest(currentUserId),
-//                 this.conditionUserIsOwner(currentUserId),
-//                 this.conditionFriendOfOwner(currentUserId),
-//                 this.conditionFiendOfFriend(currentUserId),
-//             ]
-//         }
-//     }
+    // private conditionUserIsOwner(currentUserId: bigint) {
+    //     return {
+    //         userId: currentUserId
+    //     };
+    // }
 
-//     private conditionUserInContest(currentUserId: bigint) {
-//         return {
-//             contestants: {
-//                 some: {
-//                     status: {
-//                         notIn: [ ContestantStatus.LEFT, ContestantStatus.REMOVED ]
-//                     },
-//                     user: {
-//                         id: currentUserId,
-//                     }
-//                 }
-//             }
-//         };
-//     }
+    // private conditionFriendOfOwner(currentUserId: bigint) {
+    //     return {
+    //         contestRules: {
+    //             some: {
+    //                 ruleType: ContestRuleType.JOINING_FRIEND_OF_OWNER
+    //             }
+    //         },
+    //         user: {
+    //             friends: {
+    //                 some: {
+    //                     friendId: currentUserId
+    //                 }
+    //             }
+    //         }
+    //     };
+    // }
 
-//     private conditionUserIsOwner(currentUserId: bigint) {
-//         return {
-//             userId: currentUserId
-//         };
-//     }
-
-//     private conditionFriendOfOwner(currentUserId: bigint) {
-//         return {
-//             contestRules: {
-//                 some: {
-//                     ruleType: ContestRuleType.JOINING_FRIEND_OF_OWNER
-//                 }
-//             },
-//             user: {
-//                 friends: {
-//                     some: {
-//                         friendId: currentUserId
-//                     }
-//                 }
-//             }
-//         };
-//     }
-
-//     private conditionFiendOfFriend(currentUserId: bigint) {
-//         return {
-//             contestRules: {
-//                 some: {
-//                     ruleType: ContestRuleType.JOINING_FRIEND_OF_CONTESTANT
-//                 }
-//             },
-//             some: {
-//                 contestants: {
-//                     user : {
-//                         friends: {
-//                             friendId: currentUserId
-//                         }
-//                     }
-//                 }
-//             }
-//         };
-//     }
-// }
+    // private conditionFiendOfFriend(currentUserId: bigint) {
+    //     return {
+    //         contestRules: {
+    //             some: {
+    //                 ruleType: ContestRuleType.JOINING_FRIEND_OF_CONTESTANT
+    //             }
+    //         },
+    //         some: {
+    //             contestants: {
+    //                 user : {
+    //                     friends: {
+    //                         friendId: currentUserId
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     };
+    // }
+}
