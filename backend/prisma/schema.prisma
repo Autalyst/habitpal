@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email String @unique
+  @@index([email])
+
+  userAuth UserAuth?
+  userAuthTokens UserAuthToken[]
+  friends UserFriend[] @relation(name: "friendUser")
+  friendly UserFriend[] @relation(name: "friendFriend")
+
+  contests Contest[]
+  contestants Contestant[]
+}
+
+model UserAuth {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hash String
+
+  userId BigInt @unique
+  user User @relation(fields: [userId], references: [id])
+  @@index([userId])
+}
+
+model UserAuthToken {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime @default(dbgenerated("NOW() + interval '2 week'"))
+
+  userId BigInt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([userId])
+
+  accessToken String @default(uuid())
+  @@index([accessToken])
+  refreshToken String @default(uuid()) @unique
+  @@index([refreshToken])
+}
+
+model UserFriend {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId BigInt
+  user User @relation(name: "friendUser", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([userId])
+
+  friendId BigInt
+  friend User @relation(name: "friendFriend", fields: [friendId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([friendId])
+
+  @@unique([userId, friendId])
+}
+
+model Contest {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId BigInt @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([userId])
+
+  title String
+  description String // markup
+
+  startTime DateTime
+  endTime DateTime
+
+  contestRules ContestRule[]
+  contestants Contestant[]
+}
+
+// Consider this implementation for variable contests and perhaps storing JSON
+// when the rule needs specific configuration.
+enum ContestRuleType {
+  GROUPING_SOLO
+  GROUPING_CUSTOM
+  GROUPING_ASSIGNED
+  GROUPING_RANDOM
+
+  STATS_VISIBLE
+  STATS_VISIBLE_ENDING_HIDDEN
+  STATS_HIDDEN
+
+  JOINING_APPROVAL_REQUIRED
+  JOINING_FRIEND_OF_OWNER
+  JOINING_FRIEND_OF_CONTESTANT
+  JOINING_INVITATION
+  JOINING_QR_SCAN
+
+  SOURCE_SELF
+  SOURCE_SELF_VERIFIED
+  SOURCE_VERIFIED
+  SOURCE_ASSIGNED // useful for like, points given. Perhaps allow arbitrary source linking somehow?
+}
+
+model ContestRule {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contestId BigInt
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([contestId])
+
+  ruleType ContestRuleType
+}
+
+enum ContestantStatus {
+  INVITED
+  REQUEST_TO_JOIN
+  IN_CONTEST
+  VACATION
+  RESIGNED
+  LEFT
+  REMOVED
+}
+
+model Contestant {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId BigInt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([userId])
+
+  contestId BigInt
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([contestId])
+
+  status ContestantStatus @default(REQUEST_TO_JOIN)
+}

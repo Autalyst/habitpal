@@ -1,0 +1,20 @@
+- Cleanup job to remove dead tokens
+- Cleanup job to remove old contest data
+- Challenges (or contests, depending)
+    - map challenges
+    - chat
+        - team
+        - all
+        - private
+        - reactions
+        - threading
+    - scavenger hunt challenge
+    - achievements
+    - rewards
+    - other puzzle challenges?
+    - ejecting trouble-makers
+    - recurring challenges
+    - templates to use
+- recommendations
+- habit tracking and lifestyle
+- learning / brain games
