@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { CurrentAuthService } from './current-auth.service';
+import { AuthCleanupService } from './auth-cleanup.service';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CurrentAuthService } from './current-auth.service';
         provide: APP_GUARD,
         useClass: AuthGuard
     },
+    AuthCleanupService
   ],
   controllers: [AuthController],
   exports: [CurrentAuthService]
