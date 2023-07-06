@@ -5,18 +5,18 @@ import * as argon from 'argon2';
 
 const prisma = new PrismaClient()
 
-async function makeUser(): Promise<User> {
+async function makeUser(email?: string): Promise<User> {
     const hash = await argon.hash('asdfghjk');
     return prisma.user.create({
         data: {
-            email: faker.internet.email(),
+            email: email ?? faker.internet.email(),
             userAuth: {
                 create: {
                     hash: hash,
                 }
             }
         }
-    })
+    });
 }
 
 async function main() {
@@ -24,6 +24,7 @@ async function main() {
     dotenv.config();
     console.log('Seeding database...');
 
+    await makeUser("dev@habit.com");
     for (let i = 0; i < userCount; i++) {
         await makeUser();
     }

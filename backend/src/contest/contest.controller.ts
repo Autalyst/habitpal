@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { ContestCreateDto } from './dto/contest-create.dto';
 import { ContestService } from './contest.service';
 import { Public } from 'src/auth/auth.decorator';
@@ -15,5 +15,10 @@ export class ContestController {
         @Body() contestCreateDto: ContestCreateDto,
     ) {
         return await this.contestService.createContest(contestCreateDto);
+    }
+
+    @Get()
+    async getAllContests() {
+        return await this.contestService.findAllContests();
     }
 }

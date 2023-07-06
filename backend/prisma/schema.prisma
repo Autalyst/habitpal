@@ -76,7 +76,7 @@ model Contest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId BigInt @unique
+  userId BigInt
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   @@index([userId])
 
@@ -148,6 +148,8 @@ model Contestant {
   contestId BigInt
   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   @@index([contestId])
+
+  @@unique([userId, contestId])
 
   status ContestantStatus @default(REQUEST_TO_JOIN)
 }

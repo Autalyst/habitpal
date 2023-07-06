@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { Contest, User } from "@prisma/client";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { Contest, ContestRuleType, ContestantStatus, User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ContestCreateDto } from "./dto/contest-create.dto";
 import { CurrentAuthService } from "src/auth/current-auth.service";
@@ -31,6 +31,13 @@ export class ContestService {
                             ruleType: rule.ruleType 
                         }
                     })
+                },
+
+                contestants: {
+                    create: {
+                        userId: currentUser.id,
+                        status: ContestantStatus.IN_CONTEST
+                    }
                 }
             }
         });
@@ -38,83 +45,83 @@ export class ContestService {
         return contest;
     }
 
-    // public async findContest(contestId: number): Promise<Contest> {
-    //     const currentUser: User = await this.authService.currentUser();
-    //     const contest = await this.prisma.contest.findFirst({
-    //         where: {
-    //             AND: [
-    //                 {
-    //                     id: contestId,
-    //                 },
-    //                 this.contestVisibleConditions(currentUser.id)
-    //             ]
-    //         }
-    //     });
+    public async findContest(contestId: number): Promise<Contest> {
+        const currentUser: User = await this.currentAuthService.currentUser();
+        const contest = await this.prisma.contest.findFirst({
+            where: {
+                AND: [
+                    {
+                        id: contestId,
+                    },
+                    this.contestVisibleConditions(currentUser.id)
+                ]
+            }
+        });
 
-    //     if (contest == null) {
-    //         throw new NotFoundException("Contest not found for given id. The contest doesn't exist or you don't have access to see it.");
-    //     }
+        if (contest == null) {
+            throw new NotFoundException("Contest not found for given id. The contest doesn't exist or you don't have access to see it.");
+        }
 
-    //     return contest as Contest;
-    // }
+        return contest as Contest;
+    }
 
-    // public async findAllContests(): Promise<Contest[]> {
-    //     const currentUser: User = await this.authService.currentUser();
-    //     const contests = await this.prisma.contest.findMany({
-    //         where: this.contestVisibleConditions(currentUser.id)
-    //     });
+    public async findAllContests(): Promise<Contest[]> {
+        const currentUser: User = await this.currentAuthService.currentUser();
+        const contests = await this.prisma.contest.findMany({
+            where: this.contestVisibleConditions(currentUser.id)
+        });
 
-    //     return contests as Contest[];
-    // }
+        return contests as Contest[];
+    }
 
-    // private contestVisibleConditions(currentUserId: bigint) {
-    //     return {
-    //         OR: [
-    //             this.conditionUserInContest(currentUserId),
-    //             this.conditionUserIsOwner(currentUserId),
-    //             this.conditionFriendOfOwner(currentUserId),
-    //             this.conditionFiendOfFriend(currentUserId),
-    //         ]
-    //     }
-    // }
+    private contestVisibleConditions(currentUserId: bigint) {
+        return {
+            OR: [
+                this.conditionUserInContest(currentUserId),
+                this.conditionUserIsOwner(currentUserId),
+                this.conditionFriendOfOwner(currentUserId),
+                // this.conditionFiendOfFriend(currentUserId),
+            ]
+        }
+    }
 
-    // private conditionUserInContest(currentUserId: bigint) {
-    //     return {
-    //         contestants: {
-    //             some: {
-    //                 status: {
-    //                     notIn: [ ContestantStatus.LEFT, ContestantStatus.REMOVED ]
-    //                 },
-    //                 user: {
-    //                     id: currentUserId,
-    //                 }
-    //             }
-    //         }
-    //     };
-    // }
+    private conditionUserInContest(currentUserId: bigint) {
+        return {
+            contestants: {
+                some: {
+                    status: {
+                        notIn: [ ContestantStatus.LEFT, ContestantStatus.REMOVED ]
+                    },
+                    user: {
+                        id: currentUserId,
+                    }
+                }
+            }
+        };
+    }
 
-    // private conditionUserIsOwner(currentUserId: bigint) {
-    //     return {
-    //         userId: currentUserId
-    //     };
-    // }
+    private conditionUserIsOwner(currentUserId: bigint) {
+        return {
+            userId: currentUserId
+        };
+    }
 
-    // private conditionFriendOfOwner(currentUserId: bigint) {
-    //     return {
-    //         contestRules: {
-    //             some: {
-    //                 ruleType: ContestRuleType.JOINING_FRIEND_OF_OWNER
-    //             }
-    //         },
-    //         user: {
-    //             friends: {
-    //                 some: {
-    //                     friendId: currentUserId
-    //                 }
-    //             }
-    //         }
-    //     };
-    // }
+    private conditionFriendOfOwner(currentUserId: bigint) {
+        return {
+            contestRules: {
+                some: {
+                    ruleType: ContestRuleType.JOINING_FRIEND_OF_OWNER
+                }
+            },
+            user: {
+                friends: {
+                    some: {
+                        friendId: currentUserId
+                    }
+                }
+            }
+        };
+    }
 
     // private conditionFiendOfFriend(currentUserId: bigint) {
     //     return {
@@ -123,11 +130,15 @@ export class ContestService {
     //                 ruleType: ContestRuleType.JOINING_FRIEND_OF_CONTESTANT
     //             }
     //         },
-    //         some: {
-    //             contestants: {
-    //                 user : {
-    //                     friends: {
-    //                         friendId: currentUserId
+    //         contestants: {
+    //             some: {
+    //                 user: {
+    //                     some: {
+    //                         friends: {
+    //                             some: {
+    //                                 friendId: currentUserId
+    //                             }
+    //                         }
     //                     }
     //                 }
     //             }
