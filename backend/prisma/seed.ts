@@ -1,32 +1,24 @@
-import { PrismaClient, User } from '@prisma/client';
-import { faker } from '@faker-js/faker'
+import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
-import * as argon from 'argon2';
+import { UserSeeder } from './data-seeding/user.seed';
+import { GeneratedData, Seeder } from './data-seeding/seeder';
+import { ContestSeeder } from './data-seeding/contest.seed';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
+const generatedData = new GeneratedData();
 
-async function makeUser(email?: string): Promise<User> {
-    const hash = await argon.hash('asdfghjk');
-    return prisma.user.create({
-        data: {
-            email: email ?? faker.internet.email(),
-            userAuth: {
-                create: {
-                    hash: hash,
-                }
-            }
-        }
-    });
-}
+const seeders: Seeder[] = [
+    new UserSeeder(),
+    new ContestSeeder()
+]
 
 async function main() {
-    const userCount = 10;
     dotenv.config();
     console.log('Seeding database...');
 
-    await makeUser("dev@habit.com");
-    for (let i = 0; i < userCount; i++) {
-        await makeUser();
+    for (const seeder of seeders) {
+        console.log(`* Seeding ${seeder.info()}`);
+        await seeder.seed(prisma, generatedData);
     }
 
     console.log('Done!');
