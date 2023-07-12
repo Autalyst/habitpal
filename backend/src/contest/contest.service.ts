@@ -3,11 +3,13 @@ import { Contest, ContestRuleType, ContestantStatus, User } from "@prisma/client
 import { PrismaService } from "src/prisma/prisma.service";
 import { ContestCreateDto } from "./dto/contest-create.dto";
 import { CurrentAuthService } from "src/auth/current-auth.service";
+import { ContestDao } from "./contest.dao";
 
 @Injectable()
 export class ContestService {
     constructor(
         private currentAuthService: CurrentAuthService,
+        private contestDao: ContestDao,
         private prisma: PrismaService
     ) {}
 
@@ -15,15 +17,14 @@ export class ContestService {
         contestCreateDto: ContestCreateDto
     ): Promise<Contest> {
         const currentUser: User = this.currentAuthService.currentUser();
+        const newContest = this.contestDao.new();
+        contestCreateDto.mapOnto(newContest, currentUser);
+
         const c = contestCreateDto;
 
         const contest = await this.prisma.contest.create({
             data: {
-                title: c.title,
-                description: c.description,
-                startTime: c.startTime,
-                endTime: c.endTime,
-                userId: currentUser.id,
+                ...newContest,
  
                 contestRules: {
                     create: c.contestRules.map( rule => { 
