@@ -6,20 +6,24 @@ export class ContestCreateDto {
     @IsString()
     @IsNotEmpty()
     @MaxLength(20)
-    title: string
+    title: string;
 
     @IsString()
     @IsNotEmpty()
-    description: string
+    description: string;
 
     @IsDateString()
-    startTime: Date
+    startTime: Date;
 
     @IsDateString()
-    endTime: Date
+    endTime: Date;
 
     @IsArray()
-    contestRules: ContestRuleCreateDto[]
+    contestRules: ContestRuleCreateDto[];
+
+    constructor(init?: Partial<ContestCreateDto>) {
+        Object.assign(this, init);
+    }
 
     mapOnto(record: Contest, ownerUser: User) {
         record.title = this.title;

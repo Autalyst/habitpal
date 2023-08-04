@@ -1,4 +1,4 @@
-import { Contest, ContestRuleType, ContestantStatus, Prisma, PrismaClient, User } from "@prisma/client";
+import { Contest, ContestRuleType, ContestantStatus, PrismaClient, User } from "@prisma/client";
 import { GeneratedData, Seeder } from "./seeder";
 import { faker } from '@faker-js/faker';
 import { ContestCreateDto } from "src/contest/dto/contest-create.dto";
@@ -26,13 +26,13 @@ export class ContestSeeder implements Seeder {
             ContestRuleType.SOURCE_SELF
         ];
 
-        const contestDto: ContestCreateDto = {
+        const contestDto = new ContestCreateDto({
             title: faker.music.genre(),
             description: faker.lorem.paragraph(),
             startTime: new Date(),
             endTime: new Date(),
-            contestRules: rules.map(r => ({ ruleType: r}))
-        }
+            contestRules: rules.map(r => ({ ruleType: r }))
+        });
 
         const user = generatedData.users[0];
 

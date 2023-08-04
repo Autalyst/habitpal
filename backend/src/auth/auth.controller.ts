@@ -21,10 +21,8 @@ export class AuthController {
         const authInfo = await this.authService.authorize(authRequestDto);
 
         const refreshToken = await this.authService.createRefreshToken(authInfo);
-        response.cookie('refresh-token', refreshToken, {
-            httpOnly: true
-        });
 
+        authInfo.refreshToken = refreshToken;
         return authInfo;
     }
     

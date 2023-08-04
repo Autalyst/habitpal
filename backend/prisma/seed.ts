@@ -2,14 +2,14 @@ import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import { UserSeeder } from './data-seeding/user.seed';
 import { GeneratedData, Seeder } from './data-seeding/seeder';
-import { ContestSeeder } from './data-seeding/contest.seed';
+// import { ContestSeeder } from './data-seeding/contest.seed';
 
 const prisma = new PrismaClient();
 const generatedData = new GeneratedData();
 
 const seeders: Seeder[] = [
     new UserSeeder(),
-    new ContestSeeder()
+    // new ContestSeeder()
 ]
 
 async function main() {

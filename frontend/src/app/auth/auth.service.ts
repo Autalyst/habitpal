@@ -1,18 +1,39 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { Observable, firstValueFrom } from "rxjs";
 
 @Injectable()
 export class AuthService {
     constructor(private http: HttpClient) {}
 
-    getAuthenticationTokens() {
-        return {
-            jwt: "1789371281",
-            refresh: "wwadwahuiodw"
-        };
+    getJwtToken() {
+        return localStorage.getItem('JWT_TOKEN');
     }
 
     refreshToken() {
+        const refreshToken = localStorage.getItem('REFRESH_TOKEN');
         return this.http.post('api/refreshToken', {});
     }
+
+    login(email: string, password: string): Promise<Boolean> {
+        return new Promise(async (success) => {
+            const request = this.http.post<TokenDto>(
+                'http://127.0.0.1:3000/auth', 
+                {
+                    email,
+                    password
+                }
+            );
+
+            const tokens = await firstValueFrom(request);
+            localStorage.setItem('JWT_TOKEN', tokens.jtw);
+            localStorage.setItem('REFRESH_TOKEN', tokens.refresh);
+            success(true);
+        });
+    }
+}
+
+interface TokenDto {
+    jtw: string
+    refresh: string
 }

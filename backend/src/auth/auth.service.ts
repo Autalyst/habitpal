@@ -36,7 +36,8 @@ export class AuthService {
 
         return {
             userId: user.id,
-            token: await this.signToken(user.id, user.email)
+            jwtToken: await this.signToken(user.id, user.email),
+            refreshToken: ""
         };
     }
 
@@ -49,7 +50,7 @@ export class AuthService {
         await this.prismaService.userAuthToken.create({
             data: {
                 userId: authInfo.userId,
-                accessToken: authInfo.token,
+                accessToken: authInfo.jwtToken,
                 refreshToken: uuid,
                 expiresAt: expiration,
             }
