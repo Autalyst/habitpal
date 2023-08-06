@@ -1,12 +1,18 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, firstValueFrom } from "rxjs";
+import { firstValueFrom } from "rxjs";
+import * as jsonWebToken from 'jsonwebtoken'
 
 @Injectable()
 export class AuthService {
     constructor(private http: HttpClient) {}
 
-    getJwtToken() {
+    isAuthenticated(): boolean {
+        const token = this.getJwtToken();
+        return token != null;
+    }
+
+    getJwtToken(): string | null {
         return localStorage.getItem('JWT_TOKEN');
     }
 

@@ -4,8 +4,6 @@ import { LoginComponent } from './login.component';
 import { AuthModule } from '../auth/auth.module';
 import { FormsModule } from '@angular/forms';
 
-
-
 @NgModule({
   declarations: [
     LoginComponent
@@ -13,7 +11,7 @@ import { FormsModule } from '@angular/forms';
   imports: [
     AuthModule,
     CommonModule,
-    FormsModule
+    FormsModule,
   ],
   exports: [
     LoginComponent
