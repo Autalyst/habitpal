@@ -1,7 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";
-import * as jsonWebToken from 'jsonwebtoken'
 
 @Injectable()
 export class AuthService {
@@ -22,7 +21,7 @@ export class AuthService {
     }
 
     login(email: string, password: string): Promise<Boolean> {
-        return new Promise(async (success) => {
+        return new Promise(async (success, reject) => {
             const request = this.http.post<TokenDto>(
                 'http://127.0.0.1:3000/auth', 
                 {
@@ -31,9 +30,13 @@ export class AuthService {
                 }
             );
 
-            const tokens = await firstValueFrom(request);
-            localStorage.setItem('JWT_TOKEN', tokens.jtw);
-            localStorage.setItem('REFRESH_TOKEN', tokens.refresh);
+            try {
+                const tokens = await firstValueFrom(request);
+                localStorage.setItem('JWT_TOKEN', tokens.jtw);
+                localStorage.setItem('REFRESH_TOKEN', tokens.refresh);
+            } catch(e) {
+                reject(e);
+            }
             success(true);
         });
     }

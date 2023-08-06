@@ -24,7 +24,7 @@ export class AuthInterceptor implements HttpInterceptor {
             catchError((error) => {
                 if (
                     error instanceof HttpErrorResponse
-                    && !req.url.includes('auth/signin') // TODO: Make this the actual sign in url
+                    && !req.url.includes('/auth')
                     && error.status === 401
                 ) {
                     return this.handleExpiredJwt(req, next);
