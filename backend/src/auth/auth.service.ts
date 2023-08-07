@@ -34,29 +34,13 @@ export class AuthService {
 
         await this.assertUserPasswordMatch(user.userAuth!, authRequestDto.password);
 
+        const jwtToken = await this.signToken(user.id, user.email);
+
         return {
             userId: user.id,
-            jwtToken: await this.signToken(user.id, user.email),
-            refreshToken: ""
+            jwtToken: jwtToken,
+            refreshToken: await this.createRefreshToken(user.id, jwtToken)
         };
-    }
-
-    async createRefreshToken(authInfo: AuthResultDto) {
-        const uuid = uuidv4();
-
-        const expiration = new Date();
-        expiration.setDate(expiration.getDate() + 14);
-
-        await this.prismaService.userAuthToken.create({
-            data: {
-                userId: authInfo.userId,
-                accessToken: authInfo.jwtToken,
-                refreshToken: uuid,
-                expiresAt: expiration,
-            }
-        });
-
-        return uuid;
     }
 
     async getUserForAuthToken(token: string, jwtPayload: AuthJwtDto): Promise<User | null | undefined> {
@@ -71,6 +55,14 @@ export class AuthService {
         });
 
         return userAuth?.user
+    }
+
+    async destroyTokenByRefreshToken(refreshToken: string): Promise<undefined> {
+        await this.prismaService.userAuthToken.delete({
+            where: {
+                refreshToken: refreshToken
+            }
+        });
     }
 
     // PRIVATE //
@@ -95,5 +87,23 @@ export class AuthService {
         if (!matchedPassword) {
             throw new ForbiddenException('Incorrect login information');
         }
+    }
+
+    private async createRefreshToken(userId: bigint, jwtToken: string) {
+        const uuid = uuidv4();
+
+        const expiration = new Date();
+        expiration.setDate(expiration.getDate() + 14);
+
+        await this.prismaService.userAuthToken.create({
+            data: {
+                userId: userId,
+                accessToken: jwtToken,
+                refreshToken: uuid,
+                expiresAt: expiration,
+            }
+        });
+
+        return uuid;
     }
 }

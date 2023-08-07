@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard, NonAuthGuard } from './auth.guard';
 
 @NgModule({
   declarations: [],
@@ -18,7 +18,8 @@ import { AuthGuard } from './auth.guard';
       multi: true
     },
     AuthService,
-    AuthGuard
+    AuthGuard,
+    NonAuthGuard
   ]
 })
 export class AuthModule { }

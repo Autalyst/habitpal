@@ -7,7 +7,7 @@ import { LoginModule } from './login/login.module';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { HomeComponent } from './home/home.component';
-import { AuthGuard, canActivateRoute } from './auth/auth.guard';
+import { canActivateAuthRoute, canActivateNoAuthRoute } from './auth/auth.guard';
 
 const routes: Routes = [
   {
@@ -18,7 +18,7 @@ const routes: Routes = [
   {
     path: 'app',
     component: HomeComponent,
-    canActivate: [canActivateRoute],
+    canActivate: [canActivateAuthRoute],
     children: [
       {
         path: 'home',
@@ -28,8 +28,11 @@ const routes: Routes = [
   },
   {
     path: 'login',
-    component: LoginComponent,
-    // canActivate: [NonAuthGuard]
+    component: LoginComponent
+  }, 
+  {
+    path: 'logout',
+    redirectTo: 'login',
   }
 ]
 

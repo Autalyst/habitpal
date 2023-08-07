@@ -40,6 +40,20 @@ export class AuthService {
             success(true);
         });
     }
+
+    async logout() {
+        const refreshToken = this.getRefreshToken();
+
+        if (refreshToken) {
+            await firstValueFrom(this.http.delete(`http://127.0.0.1:3000/auth/${refreshToken}`));
+        }
+
+        localStorage.clear();
+    }
+
+    private getRefreshToken(): string | null {
+        return localStorage.getItem('REFRESH_TOKEN');
+    }
 }
 
 interface TokenDto {

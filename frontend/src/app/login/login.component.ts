@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -7,12 +7,16 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
+
+  ngOnInit(): void {
+    this.authService.logout();
+  }
 
   username = '';
   password = '';
@@ -22,9 +26,8 @@ export class LoginComponent {
       await this.authService.login(this.username, this.password);
 
     if (loginSuccess) {
-      this.router.navigate([
-        this.route.snapshot.queryParamMap.get('return')
-      ]);
+      const returnRoute = this.route.snapshot.queryParamMap.get('return') ?? 'app/home';
+      this.router.navigate([returnRoute]);
     }
 
     // todo test this, test error handling, test everything

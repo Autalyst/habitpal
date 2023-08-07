@@ -24,9 +24,32 @@ export class AuthGuard {
     }
 }
 
-export const canActivateRoute: CanActivateFn = (
+@Injectable()
+export class NonAuthGuard {
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) {}
+
+    canActivate(_route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+        if (this.authService.isAuthenticated()) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+export const canActivateAuthRoute: CanActivateFn = (
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
 ) => {
     return inject(AuthGuard).canActivate(route, state);
+};
+
+export const canActivateNoAuthRoute: CanActivateFn = (
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+) => {
+    return inject(NonAuthGuard).canActivate(route, state);
 };
