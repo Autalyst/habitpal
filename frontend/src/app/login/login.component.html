@@ -3,6 +3,17 @@
         <div class="md:w-1/2 px-5">
             <h2 class="text-2xl font-bold text-[#002D74]">Habit Buddy Login</h2>
             <p class="text-sm mt-4 text-[#002D74]">Please login to your account</p>
+            <div 
+                class="border-red-500 bg-red-400 rounded-xl px-2 py-3 mt-4 font-semibold text-[#770000] items-center justify-center"
+                *ngIf="showServerError"
+            >
+                The following errors occured:
+                <ul class="list-disc px-6">
+                    <li *ngFor="let message of errorMessages">
+                        {{ message }}
+                    </li>
+                </ul>
+            </div>
             <form class="mt-6" action="#">
                 <div>
                 <label class="block text-gray-700">Email Address</label>

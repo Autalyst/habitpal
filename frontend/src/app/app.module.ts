@@ -22,7 +22,7 @@ const routes: Routes = [
     children: [
       {
         path: 'home',
-        component: HomeComponent
+        component: HomeComponent,
       }
     ]
   },
@@ -33,6 +33,11 @@ const routes: Routes = [
   {
     path: 'logout',
     redirectTo: 'login',
+  },
+  {
+    /* DEFAULT ROUTE FOR UNKNOWN */
+    path: '**',
+    redirectTo: 'app/home'
   }
 ]
 

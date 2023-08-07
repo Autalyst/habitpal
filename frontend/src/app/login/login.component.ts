@@ -18,18 +18,29 @@ export class LoginComponent implements OnInit {
     this.authService.logout();
   }
 
-  username = '';
-  password = '';
+  username: string = '';
+  password: string = '';
+  
+  errorMessages: Array<string> = [];
+  showServerError: boolean = false;
 
-  async login() {
-    const loginSuccess = 
-      await this.authService.login(this.username, this.password);
+  login() {
+    this.authService
+      .login(this.username, this.password)
+      .subscribe({
+        next: () => {
+          const returnRoute = this.route.snapshot.queryParamMap.get('return') ?? 'app/home';
+          this.router.navigate([returnRoute]);
+        },
+        error: (result) => {
+          if (result.status == 403) {
+            this.errorMessages = [result.error.message];
+          } else {
+            this.errorMessages = result.error.message;
+          }
 
-    if (loginSuccess) {
-      const returnRoute = this.route.snapshot.queryParamMap.get('return') ?? 'app/home';
-      this.router.navigate([returnRoute]);
-    }
-
-    // todo test this, test error handling, test everything
+          this.showServerError = true;
+        }
+      });
   }
 }

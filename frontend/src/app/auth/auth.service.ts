@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { Observable, firstValueFrom, map } from "rxjs";
 
 @Injectable()
 export class AuthService {
@@ -20,25 +20,17 @@ export class AuthService {
         return this.http.post('api/refreshToken', {});
     }
 
-    login(email: string, password: string): Promise<Boolean> {
-        return new Promise(async (success, reject) => {
-            const request = this.http.post<TokenDto>(
-                'http://127.0.0.1:3000/auth', 
-                {
-                    email,
-                    password
-                }
-            );
-
-            try {
-                const tokens = await firstValueFrom(request);
-                localStorage.setItem('JWT_TOKEN', tokens.jtw);
-                localStorage.setItem('REFRESH_TOKEN', tokens.refresh);
-            } catch(e) {
-                reject(e);
-            }
-            success(true);
-        });
+    login(email: string, password: string): Observable<boolean> {
+        return this.http.post<AuthResultDto>(
+            'http://127.0.0.1:3000/auth', { email, password }
+        ).pipe(
+            map(result => {
+                localStorage.clear();
+                localStorage.setItem('JWT_TOKEN', result.jwtToken);
+                localStorage.setItem('REFRESH_TOKEN', result.refreshToken);
+                return true;
+            })
+        );
     }
 
     async logout() {
@@ -56,7 +48,8 @@ export class AuthService {
     }
 }
 
-interface TokenDto {
-    jtw: string
-    refresh: string
+interface AuthResultDto {
+    userId: string
+    jwtToken: string
+    refreshToken: string
 }
