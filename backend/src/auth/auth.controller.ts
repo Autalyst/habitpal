@@ -20,7 +20,15 @@ export class AuthController {
         return authInfo;
     }
 
-    @Delete(':refreshToken')
+    @Public()
+    @Post('/refresh/:refreshToken')
+    async refreshAuthorization(
+        @Param('refreshToken') refreshToken: string
+    ) {
+        return await this.authService.refreshAuthentication(refreshToken);
+    }
+
+    @Delete('/refresh/:refreshToken')
     @HttpCode(200)
     async destroyRefreshToken(@Param('refreshToken') refreshToken: string) {
         await this.authService.destroyTokenByRefreshToken(refreshToken);

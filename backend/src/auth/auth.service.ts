@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { NotFoundException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -34,13 +34,7 @@ export class AuthService {
 
         await this.assertUserPasswordMatch(user.userAuth!, authRequestDto.password);
 
-        const jwtToken = await this.signToken(user.id, user.email);
-
-        return {
-            userId: user.id,
-            jwtToken: jwtToken,
-            refreshToken: await this.createRefreshToken(user.id, jwtToken)
-        };
+        return this.createTokenForUser(user);
     }
 
     async getUserForAuthToken(token: string, jwtPayload: AuthJwtDto): Promise<User | null | undefined> {
@@ -55,6 +49,24 @@ export class AuthService {
         });
 
         return userAuth?.user
+    }
+
+    async refreshAuthentication(refreshToken: string): Promise<AuthResultDto> {
+        const refreshTokenInformation = await this.prismaService.userAuthToken.findFirst({
+            where: {
+                refreshToken: refreshToken
+            },
+            include: {
+                user: true
+            }
+        });
+
+        if (!refreshTokenInformation) {
+            throw new NotFoundException("No refresh token found");
+        }
+
+        await this.destroyTokenByRefreshToken(refreshToken);
+        return this.createTokenForUser(refreshTokenInformation.user);
     }
 
     async destroyTokenByRefreshToken(refreshToken: string): Promise<undefined> {
@@ -86,6 +98,16 @@ export class AuthService {
         const matchedPassword = await argon.verify(auth.hash, password);
         if (!matchedPassword) {
             throw new ForbiddenException('Incorrect login information');
+        }
+    }
+
+    private async createTokenForUser(user: User): Promise<AuthResultDto> {
+        const jwtToken = await this.signToken(user.id, user.email);
+
+        return {
+            userId: user.id,
+            jwtToken: jwtToken,
+            refreshToken: await this.createRefreshToken(user.id, jwtToken)
         }
     }
 
