@@ -33,4 +33,12 @@ export class AuthController {
     async destroyRefreshToken(@Param('refreshToken') refreshToken: string) {
         await this.authService.destroyTokenByRefreshToken(refreshToken);
     }
+
+    @Public()
+    @Post('/user')
+    async createUser(
+        @Body() userCreateRequestDto: Object
+    ): Promise<Object> {
+        return null;
+    }
 }

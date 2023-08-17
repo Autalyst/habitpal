@@ -19,7 +19,21 @@ model User {
   @@index([email])
 
   userAuth UserAuth?
+  userProfile UserProfile?
   userAuthTokens UserAuthToken[]
+}
+
+model UserProfile {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId BigInt @unique
+  user User @relation( fields: [userId], references: [id])
+  @@index([userId])
+
+  displayName String
+  profilePictureUrl String?
 }
 
 model UserAuth {
