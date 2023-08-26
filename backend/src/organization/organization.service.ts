@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { AuthService } from "src/auth/auth.service";
 import { OrganizationRegistrationDto } from "./dto/organization-registration.dto";
 import { PrismaService } from "src/prisma/prisma.service";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class OrganizationService {
