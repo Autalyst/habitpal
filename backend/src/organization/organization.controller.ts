@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
-import { OrganizationRegistrationDto } from "./dto/newOrganization.dto";
+import { OrganizationRegistrationDto } from "./dto/organization-registration.dto";
 
 @Controller('organization')
 export class OrganizationController {
