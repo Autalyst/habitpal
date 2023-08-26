@@ -18,6 +18,19 @@ export class AuthService {
         private jwtService: JwtService,
     ) {}
 
+    async saveUserAuth(
+        authRequestDto: AuthRequestDto,
+        user: User
+    ): Promise<void> {
+        const hash = await argon.hash(authRequestDto.password);
+        await this.prismaService.userAuth.create({
+            data: {
+                hash: hash,
+                userId: user.id
+            }
+        });
+    }
+
     async authorize(authRequestDto: AuthRequestDto): Promise<AuthResultDto> {
         const user = await this.prismaService.user.findUnique({
             where: {
