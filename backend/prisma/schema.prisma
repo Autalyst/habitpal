@@ -10,10 +10,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Organization {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  users User[]
+}
+
 model User {
   id BigInt @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  organizationId BigInt
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   email String @unique
   @@index([email])
