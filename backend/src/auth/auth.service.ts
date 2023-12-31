@@ -51,10 +51,12 @@ export class AuthService {
         return userAuth?.user
     }
 
-    async refreshAuthentication(refreshToken: string): Promise<AuthResultDto> {
+    async refreshAuthentication(auth: AuthResultDto): Promise<AuthResultDto> {
         const refreshTokenInformation = await this.prismaService.userAuthToken.findFirst({
             where: {
-                refreshToken: refreshToken
+                userId: auth.userId,
+                accessToken: auth.jwtToken,
+                refreshToken: auth.refreshToken
             },
             include: {
                 user: true
@@ -65,19 +67,20 @@ export class AuthService {
             throw new NotFoundException("No refresh token found");
         }
 
-        await this.destroyTokenByRefreshToken(refreshToken);
+        await this.destroyUserTokenByRefreshToken(refreshTokenInformation.user, auth.refreshToken);
         return this.createTokenForUser(refreshTokenInformation.user);
     }
 
-    async destroyTokenByRefreshToken(refreshToken: string): Promise<undefined> {
+    // PRIVATE //
+    private async destroyUserTokenByRefreshToken(user: User, refreshToken: string): Promise<undefined> {
         await this.prismaService.userAuthToken.delete({
             where: {
+                userId: user.id,
                 refreshToken: refreshToken
             }
         });
     }
-
-    // PRIVATE //
+    
     private async assertUserPasswordMatch(auth: UserAuth, password: string) {
         const matchedPassword = await argon.verify(auth.hash, password);
         if (!matchedPassword) {
