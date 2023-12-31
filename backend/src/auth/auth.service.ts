@@ -18,19 +18,6 @@ export class AuthService {
         private jwtService: JwtService,
     ) {}
 
-    async saveUserAuth(
-        authRequestDto: AuthRequestDto,
-        user: User
-    ): Promise<void> {
-        const hash = await argon.hash(authRequestDto.password);
-        await this.prismaService.userAuth.create({
-            data: {
-                hash: hash,
-                userId: user.id
-            }
-        });
-    }
-
     async authorize(authRequestDto: AuthRequestDto): Promise<AuthResultDto> {
         const user = await this.prismaService.user.findUnique({
             where: {
@@ -54,7 +41,7 @@ export class AuthService {
         const userAuth = await this.prismaService.userAuthToken.findFirst({
             where: {
                 accessToken: token,
-                userId: BigInt(jwtPayload.sub)
+                userId: jwtPayload.sub
             },
             include: {
                 user: true
@@ -91,22 +78,6 @@ export class AuthService {
     }
 
     // PRIVATE //
-
-    private signToken(userId: bigint, email: string): Promise<string> {
-        const payload: AuthJwtDto = {
-            sub: userId,
-            email: email,
-        }
-
-        const secret = this.configService.get<string>('JWT_SECRET');
-        const tokenLifespan = this.configService.get<string>('JWT_TOKEN_LIFE');
-
-        return this.jwtService.signAsync(payload, {
-            expiresIn: tokenLifespan,
-            secret
-        })
-    }
-
     private async assertUserPasswordMatch(auth: UserAuth, password: string) {
         const matchedPassword = await argon.verify(auth.hash, password);
         if (!matchedPassword) {
@@ -124,7 +95,22 @@ export class AuthService {
         }
     }
 
-    private async createRefreshToken(userId: bigint, jwtToken: string) {
+    private signToken(userId: string, email: string): Promise<string> {
+        const payload: AuthJwtDto = {
+            sub: userId,
+            email: email,
+        }
+
+        const secret = this.configService.get<string>('JWT_SECRET');
+        const tokenLifespan = this.configService.get<string>('JWT_TOKEN_LIFE');
+
+        return this.jwtService.signAsync(payload, {
+            expiresIn: tokenLifespan,
+            secret
+        })
+    }
+
+    private async createRefreshToken(userId: string, jwtToken: string) {
         const uuid = uuidv4();
 
         const expiration = new Date();

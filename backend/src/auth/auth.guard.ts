@@ -26,6 +26,8 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
+  // -- PRIVATE --
+
   private isPublicEndpoint(context: ExecutionContext) : boolean {
     return this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),

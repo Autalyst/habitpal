@@ -1,4 +1,4 @@
 export class AuthJwtDto {
-    sub: bigint
+    sub: string
     email: string
 }

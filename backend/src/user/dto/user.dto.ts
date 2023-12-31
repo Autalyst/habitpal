@@ -1,5 +1,6 @@
 export interface UserDto {
-    id: BigInt
+    id: string
+    email: string
     createdAt: Date
     updatedAt: Date
 }

@@ -25,6 +25,10 @@ export class AuthController {
     async refreshAuthorization(
         @Param('refreshToken') refreshToken: string
     ) {
+        // TODO: Need to take expired auth token as well. Want to prevent 
+        // an attack where someone just crawls refresh tokens.
+        //
+        // The refresh tokens are UUIDs though so it might not be practical
         return await this.authService.refreshAuthentication(refreshToken);
     }
 

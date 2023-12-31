@@ -10,25 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Organization {
-  id BigInt @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name String
-  users User[]
-}
-
 model User {
-  id BigInt @id @default(autoincrement())
+  id String @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  organizationId BigInt
-  organization Organization @relation(fields: [organizationId], references: [id])
 
   email String
-  @@unique([organizationId, email])
+  @@unique([email])
   @@index([email])
 
   userAuth UserAuth?
@@ -37,11 +25,11 @@ model User {
 }
 
 model UserProfile {
-  id BigInt @id @default(autoincrement())
+  id String @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId BigInt @unique
+  userId String @unique
   user User @relation( fields: [userId], references: [id])
   @@index([userId])
 
@@ -50,24 +38,24 @@ model UserProfile {
 }
 
 model UserAuth {
-  id BigInt @id @default(autoincrement())
+  id String @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   hash String
 
-  userId BigInt @unique
+  userId String @unique
   user User @relation(fields: [userId], references: [id])
   @@index([userId])
 }
 
 model UserAuthToken {
-  id BigInt @id @default(autoincrement())
+  id String @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   expiresAt DateTime @default(dbgenerated("NOW() + interval '2 week'"))
 
-  userId BigInt
+  userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   @@index([userId])
 
