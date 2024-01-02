@@ -1,24 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index, Unique, OneToOne, OneToMany } from 'typeorm'
+import { Entity, Column, Index, OneToOne, OneToMany } from 'typeorm'
 import { UserAuth } from '../auth/entity/user-auth.entity'
 import { UserAuthToken } from '../auth/entity/user-auth-token.entity'
+import { BaseEntity } from 'src/typeorm/base.entity'
 
 @Entity()
-export class User {
-    @PrimaryGeneratedColumn('uuid') 
-    id: string
-
-    @CreateDateColumn({
-        type: 'timestamptz'
-    })
-    createdAt: Date
-
-    @UpdateDateColumn({
-        type: 'timestamptz'
-    })
-    updatedAt: Date
-
+export class User extends BaseEntity {
     @Column({
-        length: 100,
+        length: 128,
         unique: true
     })
     @Index()

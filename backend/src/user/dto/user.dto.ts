@@ -1,15 +1,11 @@
+import { BaseDto } from "src/util/base.dto"
 import { User } from "../entity/user.entity"
 
-export class UserDto {
-    id: string
-    email: string
-    createdAt: Date
-    updatedAt: Date
+export class UserDto extends BaseDto {
+    email: string;
 
     constructor(user: User) {
-        this.id = user.id;
+        super(user);
         this.email = user.email;
-        this.createdAt = user.createdAt;
-        this.updatedAt = user.updatedAt;
     }
 }

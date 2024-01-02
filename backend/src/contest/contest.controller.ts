@@ -1,22 +1,24 @@
-// import { Controller, Get } from "@nestjs/common";
-// import { ContestService } from "./contest.service";
-// import { CurrentAuthService } from "src/auth/current-auth.service";
-// import { Contest } from "@prisma/client";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { ContestDto } from "./dto/contest.dto";
 
-// @Controller('contest')
-// export class ContestController {
-//     constructor(
-//         private contestService: ContestService,
-//         private currentAuthService: CurrentAuthService
-//     ) {
+@Controller('contests')
+export class ContestController {
+    constructor() {
         
-//     }
+    }
 
-//     @Get()
-//     async getAllContests(
+    @Post()
+    async createContest(
+        @Body() contestDto: ContestDto
+    ) {
+        
+    }
 
-//     ): Promise<Contest[]> {
-//         const user = this.currentAuthService.currentUser();
-//         return this.contestService.getAvailableContestsForUser(user);
-//     }
-// }
+    // @Get()
+    // async getAllContests(
+
+    // ): Promise<Contest[]> {
+    //     const user = this.currentAuthService.currentUser();
+    //     return this.contestService.getAvailableContestsForUser(user);
+    // }
+}
