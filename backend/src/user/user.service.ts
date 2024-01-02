@@ -19,14 +19,12 @@ export class UserService {
         user.auth = new UserAuth();
         user.auth.hash = await argon.hash(userCreateDto.password);
 
-        return this.userDao.saveUser(user);
+        return this.userDao.save(user);
     }
 
-    // async findUser(userId: string): Promise<User> {
-    //     return this.prisma.user.findUnique({
-    //         where: {
-    //             id: userId
-    //         }
-    //     });
-    // }
+    findUser(userId: string): Promise<User> {
+        return this.userDao.findOne({
+            id: userId
+        });
+    }
 }

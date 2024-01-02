@@ -3,28 +3,21 @@ import { UserDto } from "./dto/user.dto";
 import { Public } from "./auth/auth.decorator";
 import { UserCreateDto } from "./dto/user-create.dto";
 import { UserService } from "./user.service";
-// import { CurrentAuthService } from "src/auth/current-auth.service";
+import { UserCurrentAuthService } from "./auth/current-auth.service";
 
 @Controller('users')
 export class UserController {
 
     constructor(
-        // private currentAuthService: CurrentAuthService,
+        private currentAuthService: UserCurrentAuthService,
         private userService: UserService
     ) { }
 
     @Get('/current')
-    async getCurrentUser(): Promise<UserDto> {
-        // const currentUser = this.currentAuthService.currentUser();
-        // return this.userService.findUser(currentUser.id);
-        console.log('HIT CURRENT');
-        return null;
+    getCurrentUser(): Promise<UserDto> {
+        const currentUser = this.currentAuthService.currentUser();
+        return this.userService.findUser(currentUser.id);
     }
-
-    // @Get('/:userId')
-    // async getUser(@Param('userId') userId: string): Promise<UserDto> {
-    //     return this.userService.findUser(userId);
-    // }
 
     @Public()
     @Post()

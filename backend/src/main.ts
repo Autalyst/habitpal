@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import './polyfill';
 import { ValidationPipe } from '@nestjs/common';
 import "reflect-metadata";
 

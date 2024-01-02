@@ -17,7 +17,7 @@ export class UserDao {
         });
     }
 
-    async saveUser(user: User): Promise<User> {
+    async save(user: User): Promise<User> {
         const repo = await this.userRepository;
         try {
             return await repo.save(user);
