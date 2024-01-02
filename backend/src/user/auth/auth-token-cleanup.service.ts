@@ -10,7 +10,7 @@ export class UserAuthCleanupService {
     
     private readonly logger = new Logger(UserAuthCleanupService.name)
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_DAY_AT_2PM)
     async removeExpiredAuth() {
         this.logger.debug('Running job to remove expired refresh tokens');
 

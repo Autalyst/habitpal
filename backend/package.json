@@ -8,10 +8,6 @@
   "scripts": {
     "db:dev:down": "docker-compose rm -fsv dev-db",
     "db:dev:up": "docker-compose up -d dev-db",
-    "db:dev:migrate": "prisma migrate deploy",
-    "db:dev:seed": "prisma db seed",
-    "db:dev:push": "prisma db push",
-    "db:dev:restart": "npm run db:dev:down && npm run db:dev:up && sleep 1 && npm run db:dev:push && npm run db:dev:seed",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -25,9 +21,6 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^8.3.1",

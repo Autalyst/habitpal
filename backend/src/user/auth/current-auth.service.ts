@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
-import { User } from "@prisma/client";
 import { Request } from "express";
+import { User } from "../entity/user.entity";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UserCurrentAuthService {
