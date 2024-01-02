@@ -1,40 +1,32 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { User, Prisma } from '@prisma/client';
+// import { PrismaService } from '../prisma/prisma.service';
+// import { User, Prisma } from '@prisma/client';
 import { UserCreateDto } from './dto/user-create.dto';
 
 import * as argon from 'argon2';
+import { UserDao } from './user.dao';
+import { User } from './entity/user.entity';
+import { UserAuth } from './auth/entity/user-auth.entity';
 
 @Injectable()
 export class UserService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private userDao: UserDao) {}
 
     async createUser(userCreateDto: UserCreateDto): Promise<User> {
-        try {
-            return this.prisma.user.create({
-                data: {
-                    email: userCreateDto.email,
-                    userAuth: {
-                        create: {
-                            hash: await argon.hash(userCreateDto.password)
-                        }
-                    }
-                }
-            });
-        } catch (error) {
-            if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code === 'P2002') {
-                    throw new ForbiddenException('Email address is unavailable');
-                }
-            }
-        }
+        const user = new User();
+        user.email = userCreateDto.email;
+
+        user.auth = new UserAuth();
+        user.auth.hash = await argon.hash(userCreateDto.password);
+
+        return this.userDao.saveUser(user);
     }
 
-    async findUser(userId: string): Promise<User> {
-        return this.prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        });
-    }
+    // async findUser(userId: string): Promise<User> {
+    //     return this.prisma.user.findUnique({
+    //         where: {
+    //             id: userId
+    //         }
+    //     });
+    // }
 }

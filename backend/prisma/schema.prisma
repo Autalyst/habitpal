@@ -1,111 +1,138 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// // This is your Prisma schema file,
+// // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-generator client {
-  provider = "prisma-client-js"
-}
+// generator client {
+//   provider = "prisma-client-js"
+// }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
 
-model User {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model User {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  email String
-  @@unique([email])
-  @@index([email])
+//   email String
+//   @@unique([email])
+//   @@index([email])
 
-  userAuth UserAuth?
-  userProfile UserProfile?
-  userAuthTokens UserAuthToken[]
+//   userAuth UserAuth?
+//   userProfile UserProfile?
+//   userAuthTokens UserAuthToken[]
 
-  contestants Contestant[]
-}
+//   contestants Contestant[]
+// }
 
-model UserProfile {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model UserProfile {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  userId String @unique
-  user User @relation( fields: [userId], references: [id])
-  @@index([userId])
+//   userId String @unique
+//   user User @relation( fields: [userId], references: [id])
+//   @@index([userId])
 
-  displayName String
-  profilePictureUrl String?
-}
+//   displayName String
+//   profilePictureUrl String?
+// }
 
-model UserAuth {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model UserAuth {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  hash String
+//   hash String
 
-  userId String @unique
-  user User @relation(fields: [userId], references: [id])
-  @@index([userId])
-}
+//   userId String @unique
+//   user User @relation(fields: [userId], references: [id])
+//   @@index([userId])
+// }
 
-model UserAuthToken {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  expiresAt DateTime @default(dbgenerated("NOW() + interval '2 week'"))
+// model UserAuthToken {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   expiresAt DateTime @default(dbgenerated("NOW() + interval '2 week'"))
 
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  @@index([userId])
+//   userId String
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   @@index([userId])
 
-  accessToken String @default(uuid())
-  @@index([accessToken])
-  refreshToken String @default(uuid()) @unique
-  @@index([refreshToken])
-}
+//   accessToken String @default(uuid())
+//   @@index([accessToken])
+//   refreshToken String @default(uuid()) @unique
+//   @@index([refreshToken])
+// }
 
-model Contest {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model Contest {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  publishTime DateTime?
-  startTime DateTime
-  endTime DateTime
+//   publishTime DateTime?
+//   startTime DateTime
+//   endTime DateTime
 
-  name String
-  description String
+//   name String
+//   description String
 
-  contestants Contestant[]
-}
+//   contestants Contestant[]
+//   contestEvents ContestEvent[]
+//   contestRules ContestRule[]
+// }
 
-// TODO: Contest should have "events" inside it.
-// each event can be something like a "step challenge" or "scavenger hunt"
-// each event has rules about what amount of points it provides
-// most points wins
+// // TODO: Contest should have "events" inside it.
+// // each event can be something like a "step challenge" or "scavenger hunt"
+// // each event has rules about what amount of points it provides
+// // most points wins
 
-enum ContestantStatus {
-  OWNER
-  INVITED
-  JOINED
-  QUIT
-}
+// enum ContestantStatus {
+//   OWNER
+//   INVITED
+//   JOINED
+//   QUIT
+// }
 
-model Contestant {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model Contestant {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  @@index([userId])
+//   userId String
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   @@index([userId])
 
-  contestId String
-  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  @@index([contestId])
+//   contestId String
+//   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   @@index([contestId])
 
-  status ContestantStatus @default(INVITED)
-}
+//   status ContestantStatus @default(INVITED)
+// }
+
+// model ContestEvent {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   contestId String
+//   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   @@index([contestId])
+
+//   startTime DateTime
+//   endTime DateTime
+//   name String
+//   description String
+// }
+
+// model ContestRule {
+//   id String @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   contestId String
+//   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+//   @@index([contestId])
+// }

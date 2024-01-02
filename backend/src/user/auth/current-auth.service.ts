@@ -4,7 +4,7 @@ import { User } from "@prisma/client";
 import { Request } from "express";
 
 @Injectable({ scope: Scope.REQUEST })
-export class CurrentAuthService {
+export class UserCurrentAuthService {
     constructor(
         @Inject(REQUEST) private request: Request
     ) {}

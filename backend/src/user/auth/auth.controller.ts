@@ -1,14 +1,14 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { UserAuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { AuthRequestDto } from './dto/auth.request.dto';
 import { AuthResultDto } from './dto/auth.result.dto';
 
-@Controller('auth')
-export class AuthController {
+@Controller('user/auth')
+export class UserAuthController {
 
     constructor(
-        private authService: AuthService
+        private authService: UserAuthService
     ) { }
 
     @Public()
@@ -20,11 +20,11 @@ export class AuthController {
         return authInfo;
     }
 
-    @Public()
-    @Post('/refresh')
-    async refreshAuthorization(
-        @Body() authInfo: AuthResultDto
-    ): Promise<AuthResultDto> {
-        return await this.authService.refreshAuthentication(authInfo);
-    }
+    // @Public()
+    // @Post('/refresh')
+    // async refreshAuthorization(
+    //     @Body() authInfo: AuthResultDto
+    // ): Promise<AuthResultDto> {
+    //     return await this.authService.refreshAuthentication(authInfo);
+    // }
 }

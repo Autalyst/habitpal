@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
-import { PrismaModule } from './prisma/prisma.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ContestModule } from './contest/contest.module';
+// import { ContestModule } from './contest/contest.module';
+import { TypeOrmModule } from './typeorm/typeorm.module';
 
 @Module({
   imports: [
@@ -14,10 +13,9 @@ import { ContestModule } from './contest/contest.module';
     ConfigModule.forRoot({
       isGlobal: true
     }),
-    PrismaModule,
-    AuthModule, 
+    TypeOrmModule,
     UserModule,
-    ContestModule
+    // ContestModule
   ],
   controllers: [AppController],
   providers: [AppService],
