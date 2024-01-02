@@ -10,9 +10,7 @@ export class ContestController {
     @Post()
     async createContest(
         @Body() contestDto: ContestDto
-    ) {
-        
-    }
+    ) {}
 
     // @Get()
     // async getAllContests(
