@@ -6,10 +6,10 @@ import { AuthResultDto } from './dto/auth.result.dto';
 
 import * as argon from 'argon2';
 import { AuthJwtDto } from './dto/auth.jwt.dto';
-import { UserDao } from '../user.dao';
+import { UserDao } from '../entity/user.dao';
 import { User } from '../entity/user.entity';
 import { UserAuthToken } from './entity/user-auth-token.entity';
-import { UserAuthTokenDao } from './auth-token.dao';
+import { UserAuthTokenDao } from './entity/user-auth-token.dao';
 
 @Injectable()
 export class UserAuthService {

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression  } from "@nestjs/schedule";
-import { UserAuthTokenDao } from "./auth-token.dao";
+import { UserAuthTokenDao } from "./entity/user-auth-token.dao";
 
 @Injectable()
 export class UserAuthCleanupService {

@@ -4,7 +4,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserCreateDto } from './dto/user-create.dto';
 
 import * as argon from 'argon2';
-import { UserDao } from './user.dao';
+import { UserDao } from './entity/user.dao';
 import { User } from './entity/user.entity';
 import { UserAuth } from './auth/entity/user-auth.entity';
 
