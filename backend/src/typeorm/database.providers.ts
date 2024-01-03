@@ -2,8 +2,9 @@ import { ConfigService } from '@nestjs/config';
 import { UserAuthToken } from 'src/user/auth/entity/user-auth-token.entity';
 import { UserAuth } from 'src/user/auth/entity/user-auth.entity';
 import { User } from 'src/user/entity/user.entity';
-import { DATA_SOURCE } from 'src/util/providers.constants';
 import { DataSource } from 'typeorm';
+
+export const DATA_SOURCE = 'DATA_SOURCE';
 
 export const databaseProviders = [
     {

@@ -1,4 +1,4 @@
-import { DATA_SOURCE } from "src/util/providers.constants";
+import { DATA_SOURCE } from "src/typeorm/database.providers";
 import { DataSource } from "typeorm";
 import { User } from "./user.entity";
 

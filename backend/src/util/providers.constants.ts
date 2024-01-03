@@ -1,2 +1,0 @@
-export const DATA_SOURCE = 'DATA_SOURCE';
-export const CONFIG_SERVICE = 'CONFIG_SERVICE';

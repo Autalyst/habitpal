@@ -1,4 +1,5 @@
-import { DATA_SOURCE } from "src/util/providers.constants";
+
+import { DATA_SOURCE } from "src/typeorm/database.providers";
 import { UserAuthToken } from "./user-auth-token.entity";
 import { DataSource } from "typeorm";
 
