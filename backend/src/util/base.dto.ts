@@ -1,5 +1,3 @@
-import { base } from "@faker-js/faker";
-
 export abstract class BaseDto {
     id: string
     createdAt: Date
