@@ -3,20 +3,20 @@ import { UserDto } from "./dto/user.dto";
 import { Public } from "./auth/auth.decorator";
 import { UserCreateDto } from "./dto/user-create.dto";
 import { UserService } from "./user.service";
-import { UserCurrentAuthService } from "./auth/current-auth.service";
+import { CurrentUser } from "./auth/current-auth.decorator";
 
 @Controller('users')
 export class UserController {
 
     constructor(
-        private currentAuthService: UserCurrentAuthService,
         private userService: UserService
     ) { }
 
     @Get('/current')
-    getCurrentUser(): Promise<UserDto> {
-        const currentUser = this.currentAuthService.currentUser();
-        return this.userService.findUser(currentUser.id);
+    getCurrentUser(
+        @CurrentUser() user
+    ): Promise<UserDto> {
+        return this.userService.findUser(user.id);
     }
 
     @Public()

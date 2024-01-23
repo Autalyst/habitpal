@@ -10,7 +10,6 @@ import { UserDao } from '../entity/user.dao';
 import { User } from '../entity/user.entity';
 import { UserAuthToken } from './entity/user-auth-token.entity';
 import { UserAuthTokenDao } from './entity/user-auth-token.dao';
-import { UserCurrentAuthService } from './current-auth.service';
 import { DeleteResult } from 'typeorm';
 
 @Injectable()
@@ -19,8 +18,7 @@ export class UserAuthService {
         private configService: ConfigService,
         private userDao: UserDao,
         private jwtService: JwtService,
-        private authTokenDao: UserAuthTokenDao,
-        private currentAuthService: UserCurrentAuthService,
+        private authTokenDao: UserAuthTokenDao
     ) {}
 
     async authorize(authRequestDto: AuthRequestDto): Promise<AuthResultDto> {
@@ -48,8 +46,7 @@ export class UserAuthService {
         return user
     }
 
-    async deleteAllAuthorization(): Promise<DeleteResult> {
-        const user = this.currentAuthService.currentUser();
+    async deleteAllAuthorization(user: User): Promise<DeleteResult> {
         return this.authTokenDao.delete({
             user: {
                 id: user.id
@@ -57,9 +54,7 @@ export class UserAuthService {
         });
     }
 
-    async deleteAuthorizationById(authTokenId: number): Promise<DeleteResult> {
-        const user = this.currentAuthService.currentUser();
-
+    async deleteAuthorizationById(authTokenId: number, user: User): Promise<DeleteResult> {
         return this.authTokenDao.delete({
             id: authTokenId,
             user: {
@@ -106,7 +101,7 @@ export class UserAuthService {
         const expiration = new Date();
         expiration.setDate(expiration.getDate() + 14);
 
-        const userAuthToken = new UserAuthToken();
+        const userAuthToken =  new UserAuthToken();
         userAuthToken.user = user;
         userAuthToken.jwtToken = jwtToken;
         userAuthToken.expiresAt = expiration;

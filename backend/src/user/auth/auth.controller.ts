@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { UserAuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { AuthRequestDto } from './dto/auth.request.dto';
 import { AuthResultDto } from './dto/auth.result.dto';
+import { CurrentUser } from './current-auth.decorator';
 
 @Controller('user/auth')
 export class UserAuthController {
@@ -21,15 +22,18 @@ export class UserAuthController {
     }
 
     @Delete()
-    async deleteAllAuthorizationForUser() {
-        await this.authService.deleteAllAuthorization();
+    async deleteAllAuthorizationForUser(
+        @CurrentUser() user,
+    ) {
+        await this.authService.deleteAllAuthorization(user);
     }
 
     @Delete('/:id')
     async deleteAuthorizationForUser(
-        @Param('id') id: number 
+        @Param('id') id: number,
+        @CurrentUser() user
     ) {
-        await this.authService.deleteAuthorizationById(id);
+        await this.authService.deleteAuthorizationById(id, user);
     }
 
     // @Public()
