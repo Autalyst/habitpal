@@ -4,7 +4,7 @@ export abstract class BaseEntity {
     @PrimaryGeneratedColumn('increment', {
         type: 'bigint'
     })
-    id: string
+    id: number
 
     @CreateDateColumn({
         type: 'timestamptz'

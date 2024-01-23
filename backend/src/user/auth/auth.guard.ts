@@ -29,6 +29,7 @@ export class UserAuthGuard implements CanActivate {
   // -- PRIVATE --
 
   private isPublicEndpoint(context: ExecutionContext) : boolean {
+    /* this crashes because the injector is not working for global guards. A probably bug in this version of nestjs */
     return this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass()

@@ -20,7 +20,7 @@ export class UserService {
         return this.userDao.save(user);
     }
 
-    findUser(userId: string): Promise<User> {
+    findUser(userId: number): Promise<User> {
         return this.userDao.findOne({
             id: userId
         });

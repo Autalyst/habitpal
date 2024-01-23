@@ -1,5 +1,6 @@
 export class AuthResultDto {
-    userId: string
+    id: number
+    userId: number
     jwtToken: string
     refreshToken: string
 }

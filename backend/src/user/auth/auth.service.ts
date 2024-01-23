@@ -10,6 +10,8 @@ import { UserDao } from '../entity/user.dao';
 import { User } from '../entity/user.entity';
 import { UserAuthToken } from './entity/user-auth-token.entity';
 import { UserAuthTokenDao } from './entity/user-auth-token.dao';
+import { UserCurrentAuthService } from './current-auth.service';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class UserAuthService {
@@ -17,7 +19,8 @@ export class UserAuthService {
         private configService: ConfigService,
         private userDao: UserDao,
         private jwtService: JwtService,
-        private authTokenDao: UserAuthTokenDao
+        private authTokenDao: UserAuthTokenDao,
+        private currentAuthService: UserCurrentAuthService,
     ) {}
 
     async authorize(authRequestDto: AuthRequestDto): Promise<AuthResultDto> {
@@ -36,7 +39,7 @@ export class UserAuthService {
 
     async getUserForAuthToken(token: string, jwtPayload: AuthJwtDto): Promise<User | null | undefined> {
         const user = await this.userDao.findOne({
-            id: jwtPayload.sub,
+            id: Number(jwtPayload.sub),
             authToken: {
                 jwtToken: token,
             }
@@ -45,35 +48,25 @@ export class UserAuthService {
         return user
     }
 
-    // async refreshAuthentication(auth: AuthResultDto): Promise<AuthResultDto> {
-    //     const refreshTokenInformation = await this.prismaService.userAuthToken.findFirst({
-    //         where: {
-    //             userId: auth.userId,
-    //             accessToken: auth.jwtToken,
-    //             refreshToken: auth.refreshToken
-    //         },
-    //         include: {
-    //             user: true
-    //         }
-    //     });
+    async deleteAllAuthorization(): Promise<DeleteResult> {
+        const user = this.currentAuthService.currentUser();
+        return this.authTokenDao.delete({
+            user: {
+                id: user.id
+            }
+        });
+    }
 
-    //     if (!refreshTokenInformation) {
-    //         throw new NotFoundException("No refresh token found");
-    //     }
+    async deleteAuthorizationById(authTokenId: number): Promise<DeleteResult> {
+        const user = this.currentAuthService.currentUser();
 
-    //     await this.destroyUserTokenByRefreshToken(refreshTokenInformation.user, auth.refreshToken);
-    //     return this.createTokenForUser(refreshTokenInformation.user);
-    // }
-
-    // // PRIVATE //
-    // private async destroyUserTokenByRefreshToken(user: User, refreshToken: string): Promise<undefined> {
-    //     await this.prismaService.userAuthToken.delete({
-    //         where: {
-    //             userId: user.id,
-    //             refreshToken: refreshToken
-    //         }
-    //     });
-    // }
+        return this.authTokenDao.delete({
+            id: authTokenId,
+            user: {
+                id: user.id
+            }
+        });
+    }
 
     private async assertPasswordMatch(user: User, password: string) {
         const matchedPassword = await argon.verify(user.auth.hash, password);
@@ -84,17 +77,19 @@ export class UserAuthService {
 
     private async createTokenForUser(user: User): Promise<AuthResultDto> {
         const jwtToken = await this.signToken(user.id, user.email);
+        const refreshToken = await this.createRefreshToken(user, jwtToken);
 
         return {
+            id: refreshToken.id,
             userId: user.id,
-            jwtToken: jwtToken,
-            refreshToken: await this.createRefreshToken(user, jwtToken)
+            jwtToken: refreshToken.jwtToken,
+            refreshToken: refreshToken.refreshToken
         }
     }
 
-    private signToken(userId: string, email: string): Promise<string> {
+    private signToken(userId: number, email: string): Promise<string> {
         const payload: AuthJwtDto = {
-            sub: userId,
+            sub: userId.toString(),
             email: email,
         }
 
@@ -107,7 +102,7 @@ export class UserAuthService {
         })
     }
 
-    private async createRefreshToken(user: User, jwtToken: string) {
+    private async createRefreshToken(user: User, jwtToken: string): Promise<UserAuthToken> {
         const expiration = new Date();
         expiration.setDate(expiration.getDate() + 14);
 
@@ -118,6 +113,6 @@ export class UserAuthService {
 
         await this.authTokenDao.save(userAuthToken);
 
-        return userAuthToken.refreshToken;
+        return userAuthToken;
     }
 }

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { FindOptionsRelations, FindOptionsWhere, LessThan, Repository } from "typeorm";
+import { DeleteResult, FindOptionsRelations, FindOptionsWhere, LessThan, Repository } from "typeorm";
 import { UserAuthToken } from "./user-auth-token.entity";
 import { USER_AUTH_TOKEN_REPOSITORY } from "./user-auth-token.provider";
 
@@ -22,6 +22,12 @@ export class UserAuthTokenDao {
             where: condition,
             relations: relations
         });
+    }
+
+    delete(
+        condition: FindOptionsWhere<UserAuthToken>
+    ): Promise<DeleteResult> {
+        return this.repo.delete(condition);
     }
 
     async deleteExpired(): Promise<Number> {
