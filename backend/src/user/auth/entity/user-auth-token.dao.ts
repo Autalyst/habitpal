@@ -14,6 +14,16 @@ export class UserAuthTokenDao {
         return this.repo.save(userAuthToken);
     }
 
+    find(
+        condition: FindOptionsWhere<UserAuthToken>,
+        relations: FindOptionsRelations<UserAuthToken> = {}
+    ): Promise<UserAuthToken[]> {
+        return this.repo.find({
+            where: condition,
+            relations: relations
+        });
+    }
+
     findOne(
         condition: FindOptionsWhere<UserAuthToken>,
         relations: FindOptionsRelations<UserAuthToken> = {}

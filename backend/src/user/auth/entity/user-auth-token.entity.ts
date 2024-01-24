@@ -12,14 +12,7 @@ export class UserAuthToken extends BaseEntity {
     @ManyToOne(() => User, (user) => user.auth)
     user: User
 
-    @Column({
-        unique: true
-    })
-    @Index()
-    jwtToken: string
-
     @Column()
-    @Generated('uuid')
     @Index()
-    refreshToken: string
+    refreshTokenHash: string
 }

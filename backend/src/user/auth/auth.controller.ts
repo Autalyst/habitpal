@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Param, Post, Request, Response } from '@nestjs/common';
 import { UserAuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { AuthRequestDto } from './dto/auth.request.dto';
@@ -15,32 +15,61 @@ export class UserAuthController {
     @Public()
     @Post()
     async authorize(
-        @Body() authRequestDto: AuthRequestDto
+        @Body() authRequestDto: AuthRequestDto,
+        @Response({ passthrough: true }) response
     ): Promise<AuthResultDto> {
         const authInfo = await this.authService.authorize(authRequestDto);
-        return authInfo;
+
+        return this.setupAuth(
+            response,
+            () => this.authService.authorize(authRequestDto)
+        );
     }
 
+    @HttpCode(204)
     @Delete()
     async deleteAllAuthorizationForUser(
-        @CurrentUser() user,
+        @CurrentUser() userId: number,
     ) {
-        await this.authService.deleteAllAuthorization(user);
+        this.authService.deleteAllAuthorization(userId);
     }
 
+    @HttpCode(204)
     @Delete('/:id')
     async deleteAuthorizationForUser(
         @Param('id') id: number,
-        @CurrentUser() user
+        @CurrentUser() userId: number,
     ) {
-        await this.authService.deleteAuthorizationById(id, user);
+        this.authService.deleteAuthorizationById(id, userId);
     }
 
-    // @Public()
-    // @Post('/refresh')
-    // async refreshAuthorization(
-    //     @Body() authInfo: AuthResultDto
-    // ): Promise<AuthResultDto> {
-    //     return await this.authService.refreshAuthentication(authInfo);
-    // }
+    @Public()
+    @Post('/refresh')
+    async refreshAuthorization(
+        @Request() request,
+        @Response({ passthrough: true }) response,
+    ): Promise<AuthResultDto> {
+        const refreshToken = request.cookies['refreshToken'];
+        return this.setupAuth(
+            response,
+            () => this.authService.refreshAuthorization(refreshToken)
+        );
+    }
+
+    private async setupAuth(
+        response,
+        dataFunc: () => Promise<AuthResultDto>
+    ): Promise<AuthResultDto> {
+        const authInfo = await dataFunc();
+
+        response.cookie('refreshToken', authInfo.refreshToken, {
+            expires: new Date(new Date().getTime() + (3600 * 1000 * 24 * 7)),
+            sameSite: 'strict',
+            httpOnly: true
+        });
+
+        delete authInfo.refreshToken;
+        
+        return authInfo;
+    }
 }

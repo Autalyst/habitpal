@@ -40,11 +40,7 @@ export class UserAuthGuard implements CanActivate {
     const token = this.authToken(request);
     const payload = this.validateAuthToken(token);
 
-    const user = await this.authService.getUserForAuthToken(token, payload);
-    if (!user) {
-      throw new UnauthorizedException(); // revoked token
-    }
-    request['user'] = user;
+    request['userId'] = payload.sub;
   }
 
   private authToken(request: Request): string {

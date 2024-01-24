@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRequestDto } from './dto/auth.request.dto';
@@ -35,32 +35,69 @@ export class UserAuthService {
         return this.createTokenForUser(user);
     }
 
-    async getUserForAuthToken(token: string, jwtPayload: AuthJwtDto): Promise<User | null | undefined> {
-        const user = await this.userDao.findOne({
-            id: Number(jwtPayload.sub),
-            authToken: {
-                jwtToken: token,
-            }
-        });
-
-        return user
-    }
-
-    async deleteAllAuthorization(user: User): Promise<DeleteResult> {
+    async deleteAllAuthorization(userId: number): Promise<DeleteResult> {
         return this.authTokenDao.delete({
             user: {
-                id: user.id
+                id: userId
             }
         });
     }
 
-    async deleteAuthorizationById(authTokenId: number, user: User): Promise<DeleteResult> {
+    async deleteAuthorizationById(authTokenId: number, userId: number): Promise<DeleteResult> {
         return this.authTokenDao.delete({
             id: authTokenId,
             user: {
-                id: user.id
+                id: userId
             }
         });
+    }
+
+    async refreshAuthorization(refreshToken: string): Promise<AuthResultDto> {
+        const existingToken = await this.getMatchingDatabaseToken(refreshToken);
+        const user = await this.userDao.findOne({
+            id: existingToken.user.id
+        });
+
+        const newToken = await this.createTokenForUser(user);
+
+        await this.authTokenDao.delete({
+            id: existingToken.id
+        });
+
+        return newToken;
+    }
+
+    private async getMatchingDatabaseToken(refreshToken: string): Promise<UserAuthToken> {
+        const token = this.decodeRefreshToken(refreshToken);
+
+        const existingAuthTokens = await this.authTokenDao.find({
+            user: {
+                id: Number(token.sub)
+            },
+        }, {
+            user: true
+        });
+
+        for (const dbToken of existingAuthTokens) {
+            // NOTE: This is very slow, but no way to generate the hash beforehand that I know of right now
+            const match = await argon.verify(dbToken.refreshTokenHash, refreshToken);
+            if (match) {
+                return dbToken;
+            }
+        }
+
+        throw new UnauthorizedException();
+    }
+
+    private decodeRefreshToken(refreshToken: string): AuthJwtDto {
+        try {
+            const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+            return this.jwtService.verify(refreshToken, {
+                secret: refreshSecret
+            });
+        } catch(_e) {
+            throw new UnauthorizedException();
+        }
     }
 
     private async assertPasswordMatch(user: User, password: string) {
@@ -71,39 +108,54 @@ export class UserAuthService {
     }
 
     private async createTokenForUser(user: User): Promise<AuthResultDto> {
-        const jwtToken = await this.signToken(user.id, user.email);
-        const refreshToken = await this.createRefreshToken(user, jwtToken);
+        const jwtPayload: AuthJwtDto = {
+            sub: user.id.toString(),
+            email: user.email
+        };
+
+        const jwtToken = this.signAuthToken(jwtPayload);
+        const refreshToken = this.signRefreshToken(jwtPayload);
+
+        await this.persistRefreshToken(user, refreshToken);
 
         return {
-            id: refreshToken.id,
+            id: -1, // TODO: Remove, or figure out if needed at all
             userId: user.id,
-            jwtToken: refreshToken.jwtToken,
-            refreshToken: refreshToken.refreshToken
+            jwtToken: jwtToken,
+            refreshToken: refreshToken
         }
     }
 
-    private signToken(userId: number, email: string): Promise<string> {
-        const payload: AuthJwtDto = {
-            sub: userId.toString(),
-            email: email,
-        }
-
+    private signAuthToken(payload: AuthJwtDto): string {
         const secret = this.configService.get<string>('JWT_SECRET');
         const tokenLifespan = this.configService.get<string>('JWT_TOKEN_LIFE');
 
-        return this.jwtService.signAsync(payload, {
-            expiresIn: tokenLifespan,
-            secret
-        })
+        return this.createSignedToken(payload, secret, tokenLifespan);
     }
 
-    private async createRefreshToken(user: User, jwtToken: string): Promise<UserAuthToken> {
+    private signRefreshToken(payload: AuthJwtDto): string {
+        const secret = this.configService.get<string>('JWT_REFRESH_SECRET');
+        const tokenLifespan = this.configService.get<string>('JWT_REFRESH_TOKEN_LIFE');
+
+        return this.createSignedToken(payload, secret, tokenLifespan);
+    }
+
+    private createSignedToken(payload: any, secret: string, lifespan: string): string {
+        return this.jwtService.sign(payload, {
+            expiresIn: lifespan,
+            secret
+        });
+    }
+
+    private async persistRefreshToken(user: User, refreshToken: string): Promise<UserAuthToken> {
         const expiration = new Date();
-        expiration.setDate(expiration.getDate() + 14);
+        expiration.setDate(expiration.getDate() + 14); // use this.configService.get<string>('JWT_REFRESH_TOKEN_LIFE')
+        
+        const refreshTokenHash = await argon.hash(refreshToken);
 
         const userAuthToken =  new UserAuthToken();
         userAuthToken.user = user;
-        userAuthToken.jwtToken = jwtToken;
+        userAuthToken.refreshTokenHash = refreshTokenHash;
         userAuthToken.expiresAt = expiration;
 
         await this.authTokenDao.save(userAuthToken);
